@@ -167,11 +167,12 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
                     mqChannel.basicPublish(exchange, routingKey, new AMQP.BasicProperties.Builder().deliveryMode(2).contentType("application/json").contentEncoding("UTF-8").build(),
                             messageString.getBytes());
                     if (mqChannel.waitForConfirms(5000L)) {
-                        System.out.println("send message success");
                         onPublishDataReceived(messageString);
                     }else{
                         onPublishDataFailReceived(messageString);
                     }
+                }else {
+                    onPublishDataFailReceived(messageString);
                 }
 
 
