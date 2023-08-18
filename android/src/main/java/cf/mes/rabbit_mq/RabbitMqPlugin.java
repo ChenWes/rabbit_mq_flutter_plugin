@@ -118,7 +118,7 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
                 break;
             case "createQueue":
 
-                createQueue(call.argument("exchange"), call.argument("routingKey"), call.argument("queue"), result);
+                createQueue(call.argument("exchange"), call.argument("routingKey"), call.argument("queue"), result, call.argument("exchangeDurable"), call.argument("queueDurable"));
 
                 break;
             default:
@@ -154,15 +154,15 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
     }
 
     //定义队列
-    void createQueue(String exchange, String routingKey, String queue, Result result) {
+    void createQueue(String exchange, String routingKey, String queue, Result result, Boolean exchangeDurable,Boolean queueDurable) {
 
         Runnable runnable = () -> {
 
             //交换机声明，交换机类型为直连，第三个参数需要设置为可持久化
             try {
                 if (mqChannel != null && mqChannel.isOpen()) {
-                    mqChannel.exchangeDeclare(exchange, BuiltinExchangeType.DIRECT, false);
-                    mqChannel.queueDeclare(queue, true, false, false, null);
+                    mqChannel.exchangeDeclare(exchange, BuiltinExchangeType.DIRECT, exchangeDurable);
+                    mqChannel.queueDeclare(queue, queueDurable, false, false, null);
                     //队列绑定路由
                     mqChannel.queueBind(queue, exchange, routingKey);
                     result.success("createQueueSuccess");

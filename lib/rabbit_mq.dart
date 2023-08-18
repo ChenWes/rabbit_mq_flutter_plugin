@@ -25,11 +25,15 @@ class RabbitMq {
     return result;
   }
 
-  /// 定义队列
-  static Future<String?> createQueue(
-      String exchange, String routingKey, String queue) async {
-    final String? result = await _channel.invokeMethod('createQueue',
-        {'exchange': exchange, 'routingKey': routingKey, 'queue': queue});
+  static Future<String?> createQueue(String exchange, String routingKey,
+      String queue, bool exchangeDurable, bool queueDurable) async {
+    final String? result = await _channel.invokeMethod('createQueue', {
+      'exchange': exchange,
+      'routingKey': routingKey,
+      'queue': queue,
+      'exchangeDurable': exchangeDurable,
+      'queueDurable': queueDurable
+    });
     return result;
   }
 
