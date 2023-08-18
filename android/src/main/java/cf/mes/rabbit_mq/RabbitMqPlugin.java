@@ -51,6 +51,9 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
     //发送成功确认
     private  EventChannel.EventSink eventSink = null;
 
+    //发送失败
+    private  EventChannel.EventSink publishFailEventSink = null;
+
     // 事件派发流
     private  EventChannel.StreamHandler streamHandler = new  EventChannel.StreamHandler(){
 
@@ -73,6 +76,28 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
 
     };
 
+    // 事件派发流
+    private  EventChannel.StreamHandler publishFailHandler = new  EventChannel.StreamHandler(){
+
+        @Override
+
+        public void onListen(Object arguments, EventChannel.EventSink events) {
+
+            publishFailEventSink = events;
+
+        }
+
+
+        @Override
+
+        public void onCancel(Object arguments) {
+
+            publishFailEventSink = null;
+
+        }
+
+    };
+
 
 
     @Override
@@ -86,6 +111,10 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
         EventChannel publishEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "rabbit_mq/publishEvent");
 
         publishEventChannel.setStreamHandler(streamHandler);
+
+        EventChannel publishFailEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "rabbit_mq/publishFailEvent");
+
+        publishFailEventChannel.setStreamHandler(publishFailHandler);
 
 
     }
@@ -140,13 +169,14 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
                     if (mqChannel.waitForConfirms(5000L)) {
                         System.out.println("send message success");
                         onPublishDataReceived(messageString);
+                    }else{
+                        onPublishDataFailReceived(messageString);
                     }
                 }
 
 
             } catch (IOException | InterruptedException | TimeoutException e) {
-
-               e.printStackTrace();
+                onPublishDataFailReceived(messageString);
             }
 
         };
@@ -296,6 +326,23 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
             });
         }
     }
+
+    /**
+     * 数据发送
+     *
+     * @param msgRecord
+     */
+    private void onPublishDataFailReceived(final String msgRecord) {
+        if (eventSink != null) {
+
+            mHandler.post(() -> {
+
+                // 通过数据流发送数据
+                publishFailEventSink.success(msgRecord);
+            });
+        }
+    }
+
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
