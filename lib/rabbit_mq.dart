@@ -7,6 +7,8 @@ class RabbitMq {
   static const EventChannel _eventChannel = EventChannel('rabbit_mq/event');
   static const EventChannel _publishEventChannel =
       EventChannel('rabbit_mq/publishEvent');
+  static const EventChannel _publishFailEventChannel =
+      EventChannel('rabbit_mq/publishFailEvent');
 
   static Future<String?> get platformVersion async {
     final String? version = await _channel.invokeMethod('getPlatformVersion');
@@ -63,6 +65,13 @@ class RabbitMq {
   ///接收发送成功的消息
   static Stream get receivePublishEventStream {
     return _publishEventChannel
+        .receiveBroadcastStream()
+        .map<dynamic>((dynamic value) => value);
+  }
+
+  ///接收发送失败的消息
+  static Stream get receivePublishFailEventStream {
+    return _publishFailEventChannel
         .receiveBroadcastStream()
         .map<dynamic>((dynamic value) => value);
   }
