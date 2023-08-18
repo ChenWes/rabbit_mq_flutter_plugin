@@ -54,7 +54,7 @@ class _MyAppState extends State<MyApp> {
     bool? a = await RabbitMq.connect('10.8.0.2', 'admin', 'admin123', 5);
     RabbitMq.listenQueue('test');
     RabbitMq.listenQueue('test1');
-    RabbitMq.createQueue(exchange, routingKey, 'test2');
+    RabbitMq.createQueue(exchange, routingKey, 'test2', true, true);
     RabbitMq.receiveStream.listen((event) {
       print("返回的数据" + event.toString());
     });
