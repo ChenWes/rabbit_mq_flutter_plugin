@@ -166,7 +166,7 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
 
                     mqChannel.basicPublish(exchange, routingKey, new AMQP.BasicProperties.Builder().deliveryMode(2).contentType("application/json").contentEncoding("UTF-8").build(),
                             messageString.getBytes());
-                    if (mqChannel.waitForConfirms(5000L)) {
+                    if (mqChannel.waitForConfirms(60000L)) {
                         onPublishDataReceived(messageString);
                     }else{
                         onPublishDataFailReceived(messageString);
@@ -176,7 +176,7 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
                 }
 
 
-            } catch (IOException | InterruptedException | TimeoutException e) {
+            } catch (Exception e) {
                 onPublishDataFailReceived(messageString);
             }
 
@@ -199,7 +199,7 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
                     result.success("createQueueSuccess");
                 }
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -212,31 +212,28 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
 
     //连接rabbiMQ
     void connect(String host, String userName, String password,int heartbeat, Result result) {
-        if (mqChannel != null) {
-            result.success(true);
-            return;
-        }
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(host);
-        factory.setPort(5672);
-        factory.setRequestedHeartbeat(heartbeat);
-        factory.setUsername(userName);
-        factory.setPassword(password);
-        factory.setConnectionTimeout(10 * 1000);
-        factory.setHandshakeTimeout(10 * 1000);
-        // 开启Connection自动恢复。
-        factory.setAutomaticRecoveryEnabled(true);
-        // 设置Connection重试时间间隔为5秒。
-
-
-        // 开启Topology自动恢复。
-        factory.setTopologyRecoveryEnabled(true);
-
-
-
         Runnable runnable = () -> {
 
             try {
+                if (mqChannel != null) {
+                    result.success(true);
+                    return;
+                }
+                ConnectionFactory factory = new ConnectionFactory();
+                factory.setHost(host);
+                factory.setPort(5672);
+                factory.setRequestedHeartbeat(heartbeat);
+                factory.setUsername(userName);
+                factory.setPassword(password);
+                factory.setConnectionTimeout(10 * 1000);
+                factory.setHandshakeTimeout(10 * 1000);
+                factory.setNetworkRecoveryInterval(10);
+                // 开启Connection自动恢复。
+                factory.setAutomaticRecoveryEnabled(true);
+                // 设置Connection重试时间间隔为5秒。
+
+                // 开启Topology自动恢复。
+                factory.setTopologyRecoveryEnabled(true);
                 connection = factory.newConnection();
 
                 mqChannel = connection.createChannel();
@@ -244,18 +241,13 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
                 mqChannel.confirmSelect();
                 result.success(true);
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 //重连
-                connect(host,userName,password,heartbeat,result);
-                e.printStackTrace();
-            } catch (TimeoutException e) {
-                //重连
-                connect(host,userName,password,heartbeat,result);
+                connect(host, userName, password, heartbeat, result);
                 e.printStackTrace();
             }
         };
         new Thread(runnable).start();
-
     }
 
     void listenQueue(String queueName, Result result) {
