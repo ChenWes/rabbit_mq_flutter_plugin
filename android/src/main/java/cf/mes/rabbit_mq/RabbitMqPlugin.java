@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -53,6 +55,9 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
 
     //发送失败
     private  EventChannel.EventSink publishFailEventSink = null;
+
+    //创建线程池
+    ExecutorService executorService= Executors.newCachedThreadPool();
 
     // 事件派发流
     private  EventChannel.StreamHandler streamHandler = new  EventChannel.StreamHandler(){
@@ -181,7 +186,7 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
             }
 
         };
-        new Thread(runnable).start();
+        executorService.submit(runnable);
     }
 
     //定义队列
@@ -204,7 +209,7 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
             }
 
         };
-        new Thread(runnable).start();
+        executorService.submit(runnable);
 
 
     }
@@ -247,7 +252,7 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
                 e.printStackTrace();
             }
         };
-        new Thread(runnable).start();
+        executorService.submit(runnable);
     }
 
     void listenQueue(String queueName, Result result) {
@@ -284,7 +289,7 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
                 e.printStackTrace();
             }
         };
-        new Thread(runnable).start();
+        executorService.submit(runnable);
     }
 
 
@@ -326,10 +331,8 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
      * @param msgRecord
      */
     private void onPublishDataFailReceived(final String msgRecord) {
-        if (eventSink != null) {
-
+        if (publishFailEventSink != null) {
             mHandler.post(() -> {
-
                 // 通过数据流发送数据
                 publishFailEventSink.success(msgRecord);
             });
