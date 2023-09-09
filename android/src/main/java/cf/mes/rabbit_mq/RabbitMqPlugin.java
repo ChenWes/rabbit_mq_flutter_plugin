@@ -33,7 +33,7 @@ import io.flutter.plugin.common.MethodChannel.Result;
 /**
  * RabbitMqPlugin
  */
-public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler {
+public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler{
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -43,12 +43,14 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
     private Channel mqChannel;
     private Connection connection;
 
-    // 事件通知
-    public static EventChannel.EventSink mEventSink;
+
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
     List<String> consumerList=new ArrayList<>();
+
+    // 事件通知
+    public  EventChannel.EventSink receiveEventSink;
 
     //发送成功确认
     private  EventChannel.EventSink eventSink = null;
@@ -58,6 +60,29 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
 
     //创建线程池
     ExecutorService executorService= Executors.newCachedThreadPool();
+
+
+    // 事件派发流
+    private  EventChannel.StreamHandler receiveHandler = new  EventChannel.StreamHandler(){
+
+        @Override
+
+        public void onListen(Object arguments, EventChannel.EventSink events) {
+
+            receiveEventSink = events;
+
+        }
+
+
+        @Override
+
+        public void onCancel(Object arguments) {
+
+            receiveEventSink = null;
+
+        }
+
+    };
 
     // 事件派发流
     private  EventChannel.StreamHandler streamHandler = new  EventChannel.StreamHandler(){
@@ -112,7 +137,8 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
 
         // 声明将有数据返回
         final EventChannel eventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "rabbit_mq/event");
-        eventChannel.setStreamHandler(this);
+        eventChannel.setStreamHandler(receiveHandler);
+
         EventChannel publishEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "rabbit_mq/publishEvent");
 
         publishEventChannel.setStreamHandler(streamHandler);
@@ -299,12 +325,12 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
      * @param msgRecord
      */
     private void onDataReceived(final String msgRecord) {
-        if (mEventSink != null) {
+        if (receiveEventSink != null) {
 
             mHandler.post(() -> {
 
                 // 通过数据流发送数据
-                mEventSink.success(msgRecord);
+                receiveEventSink.success(msgRecord);
             });
         }
     }
@@ -317,11 +343,14 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
     private void onPublishDataReceived(final String msgRecord) {
         if (eventSink != null) {
 
+
             mHandler.post(() -> {
 
                 // 通过数据流发送数据
                 eventSink.success(msgRecord);
             });
+
+
         }
     }
 
@@ -345,13 +374,4 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler, EventCh
         channel.setMethodCallHandler(null);
     }
 
-    @Override
-    public void onListen(Object arguments, EventChannel.EventSink events) {
-        mEventSink = events;
-    }
-
-    @Override
-    public void onCancel(Object arguments) {
-        mEventSink = null;
-    }
 }
