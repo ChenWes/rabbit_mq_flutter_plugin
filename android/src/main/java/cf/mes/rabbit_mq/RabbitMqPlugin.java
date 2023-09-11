@@ -189,30 +189,34 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler{
 
     void publish(String exchange, String routingKey, String messageString, Result result) {
 
+        try{
+            Runnable runnable = () -> {
 
-        Runnable runnable = () -> {
+                try {
+                    if (mqChannel != null && mqChannel.isOpen()) {
 
-            try {
-                if (mqChannel != null && mqChannel.isOpen()) {
-
-                    mqChannel.basicPublish(exchange, routingKey, new AMQP.BasicProperties.Builder().deliveryMode(2).contentType("application/json").contentEncoding("UTF-8").build(),
-                            messageString.getBytes());
-                    if (mqChannel.waitForConfirms(60000L)) {
-                        onPublishDataReceived(messageString);
-                    }else{
+                        mqChannel.basicPublish(exchange, routingKey, new AMQP.BasicProperties.Builder().deliveryMode(2).contentType("application/json").contentEncoding("UTF-8").build(),
+                                messageString.getBytes());
+                        if (mqChannel.waitForConfirms(60000L)) {
+                            onPublishDataReceived(messageString);
+                        }else{
+                            onPublishDataFailReceived(messageString);
+                        }
+                    }else {
                         onPublishDataFailReceived(messageString);
                     }
-                }else {
+
+
+                } catch (Exception e) {
                     onPublishDataFailReceived(messageString);
                 }
 
+            };
+            executorService.execute(runnable);
+        }catch (Exception ex){
+            onPublishDataFailReceived(messageString);
+        }
 
-            } catch (Exception e) {
-                onPublishDataFailReceived(messageString);
-            }
-
-        };
-        executorService.submit(runnable);
     }
 
     //定义队列
@@ -235,7 +239,7 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler{
             }
 
         };
-        executorService.submit(runnable);
+        executorService.execute(runnable);
 
 
     }
@@ -278,7 +282,7 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler{
                 e.printStackTrace();
             }
         };
-        executorService.submit(runnable);
+        executorService.execute(runnable);
     }
 
     void listenQueue(String queueName, Result result) {
@@ -315,7 +319,7 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler{
                 e.printStackTrace();
             }
         };
-        executorService.submit(runnable);
+        executorService.execute(runnable);
     }
 
 
