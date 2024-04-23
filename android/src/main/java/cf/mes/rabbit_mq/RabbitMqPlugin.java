@@ -18,7 +18,9 @@ import com.rabbitmq.client.Envelope;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -280,8 +282,6 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler{
                 factory.setNetworkRecoveryInterval(10);
                 // 开启Connection自动恢复。
                 factory.setAutomaticRecoveryEnabled(true);
-                // 设置Connection重试时间间隔为5秒。
-
                 // 开启Topology自动恢复。
                 factory.setTopologyRecoveryEnabled(true);
                 connection = factory.newConnection();
@@ -292,8 +292,6 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler{
                 result.success(true);
 
             } catch (Exception e) {
-                //重连
-                connect(host, userName, password, heartbeat, result);
                 e.printStackTrace();
             }
         };
