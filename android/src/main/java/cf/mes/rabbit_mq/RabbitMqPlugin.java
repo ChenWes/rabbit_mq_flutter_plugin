@@ -245,7 +245,7 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler{
             try {
                 if (mqChannel != null && mqChannel.isOpen()) {
                     mqChannel.exchangeDeclare(exchange, BuiltinExchangeType.DIRECT, exchangeDurable);
-                    mqChannel.queueDeclare(queue, queueDurable, false, false, null);
+                    mqChannel.queueDeclare(queue, queueDurable, true, false, null);
                     //队列绑定路由
                     mqChannel.queueBind(queue, exchange, routingKey);
                     result.success("createQueueSuccess");
