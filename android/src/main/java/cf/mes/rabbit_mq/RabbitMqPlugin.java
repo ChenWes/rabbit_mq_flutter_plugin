@@ -292,6 +292,7 @@ public class RabbitMqPlugin implements FlutterPlugin, MethodCallHandler{
                 result.success(true);
 
             } catch (Exception e) {
+                connect(host, userName, password, heartbeat, result);
                 e.printStackTrace();
             }
         };
