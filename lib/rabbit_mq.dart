@@ -6,9 +6,9 @@ class RabbitMq {
   static const MethodChannel _channel = MethodChannel('rabbit_mq');
   static const EventChannel _eventChannel = EventChannel('rabbit_mq/event');
   static const EventChannel _publishEventChannel =
-      EventChannel('rabbit_mq/publishEvent');
+  EventChannel('rabbit_mq/publishEvent');
   static const EventChannel _publishFailEventChannel =
-      EventChannel('rabbit_mq/publishFailEvent');
+  EventChannel('rabbit_mq/publishFailEvent');
 
   static Future<String?> get platformVersion async {
     final String? version = await _channel.invokeMethod('getPlatformVersion');
@@ -16,8 +16,8 @@ class RabbitMq {
   }
 
   /// 连接mq
-  static Future<bool?> connect(
-      String host, String userName, String password, int heartbeat) async {
+  static Future<bool?> connect(String host, String userName, String password,
+      int heartbeat) async {
     final bool? result = await _channel.invokeMethod('connect', {
       'host': host,
       'userName': userName,
@@ -40,8 +40,8 @@ class RabbitMq {
   }
 
   /// 发送消息
-  static Future<bool?> publish(
-      String exchange, String routingKey, String message) async {
+  static Future<bool?> publish(String exchange, String routingKey,
+      String message) async {
     final bool? result = await _channel.invokeMethod('publish',
         {'exchange': exchange, 'routingKey': routingKey, 'message': message});
     return result;
@@ -50,7 +50,7 @@ class RabbitMq {
   /// 监听队列
   static Future<String?> listenQueue(String queueName) async {
     final String? result =
-        await _channel.invokeMethod('listenQueue', {'queueName': queueName});
+    await _channel.invokeMethod('listenQueue', {'queueName': queueName});
     return result;
   }
 
