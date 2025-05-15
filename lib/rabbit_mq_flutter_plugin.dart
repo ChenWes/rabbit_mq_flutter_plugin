@@ -1,8 +1,10 @@
-import 'dart:async';
 
 import 'package:flutter/services.dart';
 
-class RabbitMq {
+import 'rabbit_mq_flutter_plugin_platform_interface.dart';
+
+
+class RabbitMqFlutterPlugin {
   static const MethodChannel _channel = MethodChannel('rabbit_mq');
   static const EventChannel _eventChannel = EventChannel('rabbit_mq/event');
   static const EventChannel _publishEventChannel =

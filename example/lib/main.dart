@@ -1,14 +1,15 @@
-import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
+
 import 'package:flutter/services.dart';
-import 'package:rabbit_mq/rabbit_mq.dart';
+import 'package:rabbit_mq_flutter_plugin/rabbit_mq_flutter_plugin.dart';
 
 void main() {
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -35,7 +36,7 @@ class _MyAppState extends State<MyApp> {
     // We also handle the message potentially returning null.
     try {
       platformVersion =
-          await RabbitMq.platformVersion ?? 'Unknown platform version';
+          await RabbitMqFlutterPlugin.platformVersion ?? 'Unknown platform version';
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -51,17 +52,17 @@ class _MyAppState extends State<MyApp> {
   }
 
   connect() async {
-    bool? a = await RabbitMq.connect('10.8.0.2', 'admin', 'admin123', 5);
-    RabbitMq.listenQueue('test');
-    RabbitMq.listenQueue('test1');
-    RabbitMq.createQueue(exchange, routingKey, 'test2', true, true);
-    RabbitMq.receiveStream.listen((event) {
+    bool? a = await RabbitMqFlutterPlugin.connect('10.8.0.2', 'admin', 'admin123', 5);
+    RabbitMqFlutterPlugin.listenQueue('test');
+    RabbitMqFlutterPlugin.listenQueue('test1');
+    RabbitMqFlutterPlugin.createQueue(exchange, routingKey, 'test2', true, true);
+    RabbitMqFlutterPlugin.receiveStream.listen((event) {
       print("返回的数据" + event.toString());
     });
   }
 
   publish() {
-    RabbitMq.publish(exchange, routingKey, json.encode({'a': 1}));
+    RabbitMqFlutterPlugin.publish(exchange, routingKey, json.encode({'a': 1}));
   }
 
   @override

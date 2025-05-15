@@ -1,4 +1,4 @@
-package cf.mes.rabbit_mq_example;
+package com.cf.rabbit_mq_flutter_plugin_example;
 
 import io.flutter.embedding.android.FlutterActivity;
 
